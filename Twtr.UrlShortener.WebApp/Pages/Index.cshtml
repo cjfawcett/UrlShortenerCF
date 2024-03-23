@@ -1,0 +1,22 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Twtr URL Shortener";
+}
+
+
+<div class="text-center">
+    <h1 class="display-4">Welcome to TWTR</h1>
+    <p>Enter a URL and hit Generate to get a shortened user-friendly URL.</p>
+    <form class="form-horizontal" method="post">
+        <label for="FullUrl">Url:</label>
+        <input type="text" name="FullUrl" />
+        <button type="submit">Generate</button>
+        <br />
+        <br />
+        <label for="ShortenedUrl">Generated URL:</label>
+        <input type="text" name="ShortenedUrl" value="@Model.ShortenedUrl"/>
+    </form>
+
+
+</div>
