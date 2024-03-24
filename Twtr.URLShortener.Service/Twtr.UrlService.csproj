@@ -11,7 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Twtr.Domain\Twtr.Domain.csproj" />
+    <ProjectReference Include="..\Twtr.UrlShortener.Domain\Twtr.Domain.csproj" />
     <ProjectReference Include="..\Twtr.UrlShortener.Persistence\Twtr.UrlShortener.Persistence.csproj" />
   </ItemGroup>
 
