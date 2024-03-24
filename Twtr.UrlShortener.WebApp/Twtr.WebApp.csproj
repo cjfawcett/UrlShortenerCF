@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\URLShortenerService\Twtr.UrlService.csproj" />
+    <ProjectReference Include="..\Twtr.UrlShortener.Service\Twtr.UrlService.csproj" />
   </ItemGroup>
 
   <ItemGroup>
