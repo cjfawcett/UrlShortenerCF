@@ -16,12 +16,20 @@ namespace Twtr.UrlService
             contextFactory = dbContextFactory;
         }
 
-        public async Task<string> GetUrl(Guid id)
+        public async Task<string> GetShortUrl(Guid id)
         {
             using var context = await contextFactory.CreateDbContextAsync();
             var url = await context.UrlEntities.FindAsync(id);
 
             return $"{url?.TLDEntity?.TLD}/{url?.ShortenedUrl}";
+        }
+
+        public async Task<string> GetFullUrl(string shortenedUrl)
+        {
+            using var context = await contextFactory.CreateDbContextAsync();
+            var url = await context.UrlEntities.SingleAsync(s => s.ShortenedUrl == shortenedUrl);
+
+            return url?.OriginalUrl;
         }
 
         public async Task<Guid?> ShortenUrlRequest(string fullLengthUrl)
@@ -39,17 +47,16 @@ namespace Twtr.UrlService
             var urlId = Guid.Empty;
             if (tldEntity is not null)
             {
-                var shortUrl = urlGenerator.GenerateShortUrlKey(tldEntity.SeedNumber);
                 using var context = contextFactory.CreateDbContext();
 
-                if (CheckIfUrlExists(tldEntity, shortUrl).Result)
+                if (CheckIfUrlExists(tldEntity, fullLengthUrl).Result)
                 {
-                    urlId = context.UrlEntities.Single(url => url.TLDId == tldEntity.Id && url.ShortenedUrl == shortUrl).Id;
+                    urlId = context.UrlEntities.Single(url => url.TLDId == tldEntity.Id && url.OriginalUrl == fullLengthUrl).Id;
                 }
                 else
                 {
                     tldEntity.SeedNumber++;
-                    shortUrl = urlGenerator.GenerateShortUrlKey(tldEntity.SeedNumber);
+                    var shortUrl = urlGenerator.GenerateShortUrlKey(tldEntity.SeedNumber);
 
                     context.TLDEntities
                         .Where(w => w.Id == tldEntity.Id)
@@ -65,11 +72,11 @@ namespace Twtr.UrlService
             return urlId;
         }
 
-        public async Task<bool> CheckIfUrlExists(TLDEntity tldEntity, string generatedShortUrl)
+        public async Task<bool> CheckIfUrlExists(TLDEntity tldEntity, string fullUrl)
         {
             using var context = await contextFactory.CreateDbContextAsync();
 
-            return await context.UrlEntities.AnyAsync(url => url.TLDId == tldEntity.Id && url.ShortenedUrl == generatedShortUrl);
+            return await context.UrlEntities.AnyAsync(url => url.TLDId == tldEntity.Id && url.OriginalUrl == fullUrl);
         }
 
         public async Task<List<TLDEntity>> GetTLDs()
