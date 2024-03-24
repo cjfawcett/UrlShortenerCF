@@ -10,11 +10,14 @@ namespace UrlShortenerCF.Pages
         private readonly ILogger<IndexModel> _logger;
         private readonly IUrlShortener urlShortener;
 
-        [BindProperty(SupportsGet = true)]
+        [BindProperty]
         public string? FullUrl { get; set; }
 
-        [BindProperty(SupportsGet = true)]
+        [BindProperty]
         public string? ShortenedUrl { get; set; }
+
+        [BindProperty]
+        public Guid? UrlID { get; set; }
 
         public IndexModel(ILogger<IndexModel> logger, IUrlShortener urlShortener)
         {
@@ -22,23 +25,30 @@ namespace UrlShortenerCF.Pages
             this.urlShortener = urlShortener;
         }
 
-        public async void OnGet(Guid? urlId = null)
+        public async Task OnGet(Guid? urlId)
         {
             if (urlId.HasValue)
             {
-                ShortenedUrl = await urlShortener.GetUrl(urlId.Value);
+                ShortenedUrl = await urlShortener.GetShortUrl(urlId.Value);
+                TempData["shortenedUrl"] = ShortenedUrl;
             }
         }
 
-        public async Task<IActionResult> OnPostAsync()
+        public async Task<IActionResult> OnPostShortenAsync()
         {
-            Guid? urlId = Guid.Empty;
-
             if (FullUrl is not null)
             {
-                urlId = await urlShortener.ShortenUrlRequest(FullUrl);
+                UrlID = await urlShortener.ShortenUrlRequest(FullUrl);
             }
-            return RedirectToAction(nameof(OnGet), new { urlId });
+            return RedirectToAction(nameof(OnGet), new { UrlID });
+        }
+
+        public async Task<IActionResult> OnPostNavigateAsync()
+        {
+            ShortenedUrl = TempData["shortenedUrl"]?.ToString();
+            var urlKey = ShortenedUrl?.Substring(ShortenedUrl.LastIndexOf('/') + 1);
+            var originalUrl = await urlShortener.GetFullUrl(urlKey);
+            return Redirect(originalUrl);
         }
     }
 }
